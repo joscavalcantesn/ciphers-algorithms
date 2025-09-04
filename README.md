@@ -1,5 +1,8 @@
 # 🧠 Cipher Algorithms - C# Conversion
-Converting Ribeiro's code, aka 40, to C#.
+Converting Matheus Ribeiro code, aka 40, to C#.
+
+## About this version
+This is a conversion/adaptation to C# .NET 9.0 of the original Python code created by Matheus Ribeiro.
 
 ## 🔗 Credits and Links
 
