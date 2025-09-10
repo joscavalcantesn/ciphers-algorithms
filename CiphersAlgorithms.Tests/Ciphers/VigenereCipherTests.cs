@@ -51,10 +51,10 @@ public class VigenereCipherTests
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public void ValidateKey_EmptyOrNullKey_ThrowsArgumentException(string invalidKey)
+    public void ValidateKey_EmptyOrNullKey_ThrowsArgumentException(string? invalidKey)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => VigenereCipher.ValidateKey(invalidKey));
+        Assert.Throws<ArgumentException>(() => VigenereCipher.ValidateKey(invalidKey ?? string.Empty));
     }
 
     [Theory]
@@ -84,10 +84,10 @@ public class VigenereCipherTests
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public void Encrypt_EmptyOrNullText_ThrowsArgumentException(string invalidText)
+    public void Encrypt_EmptyOrNullText_ThrowsArgumentException(string? invalidText)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _vigenere.Encrypt(invalidText, "key"));
+        Assert.Throws<ArgumentException>(() => _vigenere.Encrypt(invalidText ?? string.Empty, "key"));
     }
 
     [Theory]

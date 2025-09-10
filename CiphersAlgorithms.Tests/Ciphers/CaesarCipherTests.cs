@@ -82,10 +82,10 @@ public class CaesarCipherTests
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public void Encrypt_EmptyOrNullText_ThrowsArgumentException(string invalidText)
+    public void Encrypt_EmptyOrNullText_ThrowsArgumentException(string? invalidText)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _caesar.Encrypt(invalidText, 3));
+        Assert.Throws<ArgumentException>(() => _caesar.Encrypt(invalidText ?? string.Empty, 3));
     }
 
     [Theory]
