@@ -1,7 +1,7 @@
 ﻿// Original Author: Matheus Ribeiro - Python Version
 // GitHub: https://github.com/MatheusRibeiro443
 // Converted to C# by: Josias Cavalcante
-// Conversion Date: 04/09/2025
+// Conversion Date: 10/09/2025
 // Original Repository: https://github.com/MatheusRibeiro443/Ciphers
 
 using System.Text;
