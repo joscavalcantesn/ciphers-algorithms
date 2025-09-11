@@ -36,13 +36,22 @@ public class VernamCipher : CipherBase
     {
         ValidateText(text);
 
+        int keyPosition = 0;
+        StringBuilder result = new();
+
         if (action == "dec")
         {
-            text = HexToString(text);
+            try
+            {
+                // Convert hex string to bytes, then to string
+                byte[] bytes = Convert.FromHexString(text);
+                text = Encoding.UTF8.GetString(bytes);
+            }
+            catch (FormatException ex)
+            {
+                throw new ArgumentException("Invalid hex string for decryption", ex);
+            }
         }
-
-        StringBuilder result = new();
-        int keyPosition = 0;
 
         foreach (char ch in text)
         {
@@ -52,42 +61,14 @@ public class VernamCipher : CipherBase
             keyPosition++;
         }
 
-        string processedText = result.ToString();
-
         if (action == "enc")
         {
-            processedText = StringToHex(processedText);
+            byte[] bytes = Encoding.UTF8.GetBytes(result.ToString());
+            return Convert.ToHexString(bytes).ToLower();
         }
-
-        return processedText;
-    }
-
-    private static string StringToHex(string text)
-    {
-        byte[] bytes = Encoding.UTF8.GetBytes(text);
-        return Convert.ToHexStringLower(bytes);
-    }
-
-    private static string HexToString(string hex)
-    {
-        try
+        else // dec
         {
-            if (hex.Length % 2 != 0)
-            {
-                throw new ArgumentException("Invalid hex string length");
-            }
-
-            byte[] bytes = new byte[hex.Length / 2];
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                string hexByte = hex.Substring(i * 2, 2);
-                bytes[i] = Convert.ToByte(hexByte, 16);
-            }
-            return Encoding.UTF8.GetString(bytes);
-        }
-        catch
-        {
-            throw new ArgumentException("Invalid hex string for decryption");
+            return result.ToString();
         }
     }
 
