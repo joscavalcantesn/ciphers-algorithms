@@ -10,6 +10,12 @@ This is a conversion/adaptation to C# .NET 9.0 of the original Python code creat
 - **Original Repository**: [link to the repo](https://github.com/MatheusRibeiro443/Ciphers)
 - **C# Conversion**: [Josias Cavalcante](https://github.com/joscavalcantesn/ciphers-algorithms)
 
+## Documentation
+
+- [Vigenère Cipher](docs/VIGENERE.md)
+- [Vernam Cipher](docs/VERNAM.md)
+- [Caesar Cipher](docs/CAESAR.md)
+
 ## 🚀 Technologies
 - .NET 9.0
 - C#
