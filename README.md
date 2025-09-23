@@ -12,9 +12,10 @@ This is a conversion/adaptation to C# .NET 9.0 of the original Python code creat
 
 ## Documentation
 
-- [Vigenère Cipher](docs/VIGENERE.md)
-- [Vernam Cipher](docs/VERNAM.md)
-- [Caesar Cipher](docs/CAESAR.md)
+- [Vigenère Cipher](docs/vigenere.md)
+- [Vigenère Cipher Breaker](docs/vigenere_breaker.md)
+- [Vernam Cipher](docs/vernam.md)
+- [Caesar Cipher](docs/caesar.md)
 
 ## 🚀 Technologies
 - .NET 9.0
