@@ -1,9 +1,15 @@
-﻿using CiphersAlgorithms.Ciphers;
+﻿using CiphersAlgorithms.Breakers;
+using CiphersAlgorithms.Ciphers;
 
-var caesarCipher = new CaesarCipher();
+// Running Ciphers
+//var caesarCipher = new CaesarCipher();
 var vigenereCipher = new VigenereCipher();
-var vernamCipher = new VernamCipher();
+//var vernamCipher = new VernamCipher();
 
-caesarCipher.Run();
+//caesarCipher.Run();
 vigenereCipher.Run();
-vernamCipher.Run();
+//vernamCipher.Run();
+
+// Breaking Vigenere Cipher
+var vigenereBreaker = new VigenereBreaker();
+vigenereBreaker.Run();
