@@ -5,53 +5,45 @@
 // Original Repository: https://github.com/MatheusRibeiro443/Ciphers
 
 using System.Text;
+using CiphersAlgorithms.Common;
 
 namespace CiphersAlgorithms.Ciphers;
 
-public class VernamCipher : CipherBase
+public class VernamCipher : CipherBase<string>
 {
-    public override string Encrypt(string text, object key)
+    public override string Encrypt(string text, string key)
     {
-        if (key is not string stringKey) throw new ArgumentException("Key must be a string");
-        ValidateKey(stringKey);
-        return ProcessVernam(text, stringKey, "enc");
+        ValidateKey(key);
+        return ProcessVernam(text, key, CipherMode.Encrypt);
     }
 
-    public override string Decrypt(string text, object key)
+    public override string Decrypt(string text, string key)
     {
-        if (key is not string stringKey) throw new ArgumentException("Key must be a string");
-        ValidateKey(stringKey);
-        return ProcessVernam(text, stringKey, "dec");
+        ValidateKey(key);
+        return ProcessVernam(text, key, CipherMode.Decrypt);
     }
 
-    public static void ValidateKey(string key)
+    public override void ValidateKey(string key)
     {
-        if (string.IsNullOrEmpty(key))
+        if (string.IsNullOrWhiteSpace(key))
         {
-            throw new ArgumentException("Key cannot be null or empty");
+            throw new ArgumentException("Key cannot be null, empty or whitespace only");
         }
     }
 
-    private static string ProcessVernam(string text, string key, string action)
+    private static string ProcessVernam(string text, string key, CipherMode mode)
     {
-        ValidateText(text);
+        if (mode == CipherMode.Decrypt)
+        {
+            text = ConvertHexToString(text);
+        }
+        else
+        {
+            ValidateText(text);
+        }
 
+        var result = new StringBuilder(text.Length);
         int keyPosition = 0;
-        StringBuilder result = new();
-
-        if (action == "dec")
-        {
-            try
-            {
-                // Convert hex string to bytes, then to string
-                byte[] bytes = Convert.FromHexString(text);
-                text = Encoding.UTF8.GetString(bytes);
-            }
-            catch (FormatException ex)
-            {
-                throw new ArgumentException("Invalid hex string for decryption", ex);
-            }
-        }
 
         foreach (char ch in text)
         {
@@ -61,53 +53,78 @@ public class VernamCipher : CipherBase
             keyPosition++;
         }
 
-        if (action == "enc")
+        return mode == CipherMode.Encrypt 
+            ? ConvertStringToHex(result.ToString())
+            : result.ToString();
+    }
+
+    private static string ConvertHexToString(string hexString)
+    {
+        try
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(result.ToString());
-            return Convert.ToHexString(bytes).ToLower();
+            if (string.IsNullOrWhiteSpace(hexString))
+            {
+                throw new ArgumentException("Hex string cannot be null or empty");
+            }
+
+            // Remove any whitespace and convert to lowercase
+            hexString = hexString.Replace(" ", "").ToLower();
+            
+            // Validate hex string format
+            if (hexString.Length % 2 != 0 || !IsValidHexString(hexString))
+            {
+                throw new FormatException("Invalid hex string format");
+            }
+
+            byte[] bytes = Convert.FromHexString(hexString);
+            return Encoding.UTF8.GetString(bytes);
         }
-        else // dec
+        catch (FormatException ex)
         {
-            return result.ToString();
+            throw new ArgumentException("Invalid hex string for decryption", ex);
         }
+    }
+
+    private static string ConvertStringToHex(string text)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(text);
+        return Convert.ToHexString(bytes).ToLower();
+    }
+
+    private static bool IsValidHexString(string hex)
+    {
+        return hex.All(c => char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
     }
 
     public override void Run()
     {
-        PrintWelcomeMessage("Vernam Cipher", "v1.0");
-
-        Console.Write("Text: ");
-        string text = Console.ReadLine() ?? string.Empty;
-
-        Console.Write("Key: ");
-        string key = Console.ReadLine() ?? string.Empty;
-
         try
         {
+            PrintWelcomeMessage("Vernam Cipher", "v2.0");
+
+            string text = GetUserInput("Text");
+            string key = GetUserInput("Key");
+            string action = GetUserInput("Action (enc/dec)").ToLower();
+
             ValidateKey(key);
+
+            string result = action switch
+            {
+                "enc" => Encrypt(text, key),
+                "dec" => Decrypt(text, key),
+                _ => throw new ArgumentException("Invalid action. Use 'enc' or 'dec'")
+            };
+
+            Console.WriteLine($"\nResult: {result}");
+            PrintSuccess($"{(action == "enc" ? "Encryption" : "Decryption")} completed!");
         }
         catch (ArgumentException ex)
         {
-            Console.WriteLine($"***{ex.Message}***");
-            return;
+            PrintError(ex.Message);
         }
-
-        Console.Write("Action (enc/dec): ");
-        string action = Console.ReadLine() ?? string.Empty;
-
-        try
+        catch (Exception ex)
         {
-            string result = action == "enc"
-                ? Encrypt(text, key)
-                : action == "dec"
-                    ? Decrypt(text, key)
-                    : throw new ArgumentException("Invalid action");
-
-            Console.WriteLine(result);
-        }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine($"***{ex.Message}***");
+            PrintError($"Unexpected error: {ex.Message}");
         }
     }
 }

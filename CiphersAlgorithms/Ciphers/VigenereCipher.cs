@@ -5,46 +5,49 @@
 // Original Repository: https://github.com/MatheusRibeiro443/Ciphers
 
 using System.Text;
+using CiphersAlgorithms.Common;
+using CiphersAlgorithms.Utilities;
 
 namespace CiphersAlgorithms.Ciphers;
 
-public class VigenereCipher : CipherBase
+public class VigenereCipher : CipherBase<string>
 {
-    public override string Encrypt(string text, object key)
+    public override string Encrypt(string text, string key)
     {
-        if (key is not string stringKey) throw new ArgumentException("Key must be a string");
-        ValidateKey(stringKey);
-        return ProcessVigenere(text, stringKey, "enc");
+        ValidateKey(key);
+        return ProcessVigenere(text, key, CipherMode.Encrypt);
     }
 
-    public override string Decrypt(string text, object key)
+    public override string Decrypt(string text, string key)
     {
-        if (key is not string stringKey) throw new ArgumentException("Key must be a string");
-        ValidateKey(stringKey);
-        return ProcessVigenere(text, stringKey, "dec");
+        ValidateKey(key);
+        return ProcessVigenere(text, key, CipherMode.Decrypt);
     }
 
-    public static void ValidateKey(string key)
+    public override void ValidateKey(string key)
     {
-        if (string.IsNullOrEmpty(key) || key.Any(ch => !char.IsLetter(ch)))
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("Key cannot be null, empty or whitespace only");
+        }
+
+        if (key.Any(ch => !char.IsLetter(ch)))
         {
             throw new ArgumentException("Key must contain only letters");
         }
     }
 
-    private static string ProcessVigenere(string text, string key, string action)
+    private static string ProcessVigenere(string text, string key, CipherMode mode)
     {
         text = SanitizeText(text);
         ValidateText(text);
         key = key.ToLower();
 
-        StringBuilder result = new();
+        var result = new StringBuilder(text.Length);
         int keyPosition = 0;
 
-        for (int i = 0; i < text.Length; i++)
+        foreach (char currentChar in text)
         {
-            char currentChar = text[i];
-
             if (!Alphabet.Contains(currentChar))
             {
                 result.Append(currentChar);
@@ -55,15 +58,9 @@ public class VigenereCipher : CipherBase
             int keyIndex = Alphabet.IndexOf(keyChar);
             int textIndex = Alphabet.IndexOf(currentChar);
 
-            int newIndex;
-            if (action == "enc")
-            {
-                newIndex = (textIndex + keyIndex) % 26;
-            }
-            else
-            {
-                newIndex = (textIndex - keyIndex + 26) % 26;
-            }
+            int newIndex = mode == CipherMode.Encrypt
+                ? (textIndex + keyIndex) % 26
+                : (textIndex - keyIndex + 26) % 26;
 
             result.Append(Alphabet[newIndex]);
             keyPosition++;
@@ -74,40 +71,36 @@ public class VigenereCipher : CipherBase
 
     public override void Run()
     {
-        PrintWelcomeMessage("Vigenére Cipher", "v1.0");
-
-        Console.Write("Text: ");
-        string text = Console.ReadLine()?.ToLower() ?? string.Empty;
-
-        Console.Write("Key: ");
-        string key = Console.ReadLine()?.ToLower() ?? string.Empty;
-
         try
         {
+            PrintWelcomeMessage(
+                CipherConfiguration.Messages.GetCipherName(CipherEnums.CipherType.Vigenere),
+                "v2.0"
+            );
+
+            string text = GetUserInput("Text").ToLower();
+            string key = GetUserInput("Key").ToLower();
+            string actionString = GetUserInput("Action (enc/dec)").ToLower();
+
             ValidateKey(key);
-        }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine($"***{ex.Message}***");
-            return;
-        }
 
-        Console.Write("Action (enc/dec): ");
-        string action = Console.ReadLine() ?? string.Empty;
+            // Usando o ActionConverter para converter string em enum
+            var mode = ActionConverter.ToCipherMode(actionString);
 
-        try
-        {
-            string result = action == "enc"
+            string result = mode == CipherMode.Encrypt
                 ? Encrypt(text, key)
-                : action == "dec"
-                    ? Decrypt(text, key)
-                    : throw new ArgumentException("Invalid action");
+                : Decrypt(text, key);
 
-            Console.WriteLine(result);
+            Console.WriteLine($"\nResult: {result}");
+            PrintSuccess(CipherConfiguration.Messages.GetModeMessage(mode));
         }
         catch (ArgumentException ex)
         {
-            Console.WriteLine($"***{ex.Message}***");
+            PrintError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            PrintError($"Unexpected error: {ex.Message}");
         }
     }
 }

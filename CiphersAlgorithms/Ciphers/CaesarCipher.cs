@@ -5,42 +5,63 @@
 // Original Repository: https://github.com/MatheusRibeiro443/Ciphers
 
 using System.Text;
+using CiphersAlgorithms.Common;
 
 namespace CiphersAlgorithms.Ciphers;
 
-public class CaesarCipher : CipherBase
+public class CaesarCipher : CipherBase<int>, IBreakableCipher<int>
 {
-    public override string Encrypt(string text, object key)
+    private const int MaxKey = 26;
+    private const int MinKey = 1;
+
+    public override string Encrypt(string text, int key)
     {
-        if (key is not int intKey) throw new ArgumentException("Key must be an integer");
-        return ProcessCaesar(text, intKey, "enc");
+        ValidateKey(key);
+        return ProcessCaesar(text, key, CipherMode.Encrypt);
     }
 
-    public override string Decrypt(string text, object key)
+    public override string Decrypt(string text, int key)
     {
-        if (key is not int intKey) throw new ArgumentException("Key must be an integer");
-        return ProcessCaesar(text, intKey, "dec");
+        ValidateKey(key);
+        return ProcessCaesar(text, key, CipherMode.Decrypt);
     }
 
-    public List<(int Key, string Text)> Break(string text)
+    public override void ValidateKey(int key)
+    {
+        if (key < MinKey || key > MaxKey)
+        {
+            throw new ArgumentOutOfRangeException(nameof(key),
+                $"Key must be between {MinKey} and {MaxKey}");
+        }
+    }
+
+    public IEnumerable<(int Key, string Text)> Break(string cipherText)
     {
         var results = new List<(int, string)>();
 
-        for (int currentKey = 1; currentKey <= 26; currentKey++)
+        for (int currentKey = MinKey; currentKey <= MaxKey; currentKey++)
         {
-            string decryptedText = ProcessCaesar(text, currentKey, "dec");
-            results.Add((currentKey, decryptedText));
+            try
+            {
+                string decryptedText = ProcessCaesar(cipherText, currentKey, CipherMode.Decrypt);
+                results.Add((currentKey, decryptedText));
+            }
+            catch (ArgumentException)
+            {
+                // Skip invalid keys
+                continue;
+            }
         }
 
         return results;
     }
 
-    private static string ProcessCaesar(string text, int key, string mode)
+    private static string ProcessCaesar(string text, int key, CipherMode mode)
     {
         text = SanitizeText(text);
         ValidateText(text);
 
-        StringBuilder result = new();
+        var result = new StringBuilder(text.Length);
 
         foreach (char ch in text)
         {
@@ -48,11 +69,9 @@ public class CaesarCipher : CipherBase
             {
                 int index = Alphabet.IndexOf(ch);
 
-                index = mode == "enc"
-                    ? (index + key) % 26
-                    : (index - key) % 26;
-
-                if (index < 0) index += 26;
+                index = mode == CipherMode.Encrypt
+                    ? (index + key) % MaxKey
+                    : (index - key + MaxKey) % MaxKey;
 
                 result.Append(Alphabet[index]);
             }
@@ -67,43 +86,59 @@ public class CaesarCipher : CipherBase
 
     public override void Run()
     {
-        PrintWelcomeMessage("Caesar Cipher", "v1.0");
-
-        Console.Write("Text: ");
-        string text = Console.ReadLine()?.ToLower() ?? string.Empty;
-
-        Console.Write("Mode (enc/dec/break): ");
-        string mode = Console.ReadLine() ?? string.Empty;
-
-        int key = 0;
-
-        if (mode != "break")
+        try
         {
-            Console.Write("Key(1-26): ");
-            int.TryParse(Console.ReadLine(), out key);
-        }
+            PrintWelcomeMessage("Caesar Cipher", "v2.0");
 
-        if (mode == "break")
-        {
-            var results = Break(text);
-            foreach (var (resultKey, resultText) in results)
+            string text = GetUserInput("Text").ToLower();
+            string mode = GetUserInput("Mode (enc/dec/break)").ToLower();
+
+            switch (mode)
             {
-                Console.WriteLine($"Key: {resultKey:00} - * {resultText} *");
+                case "break":
+                    RunBreakMode(text);
+                    break;
+                case "enc":
+                case "dec":
+                    RunCipherMode(text, mode);
+                    break;
+                default:
+                    PrintError("Invalid mode. Use 'enc', 'dec', or 'break'");
+                    break;
             }
         }
-        else if (mode == "enc")
+        catch (ArgumentException ex)
         {
-            string result = Encrypt(text, key);
-            Console.WriteLine(result);
+            PrintError(ex.Message);
         }
-        else if (mode == "dec")
+        catch (Exception ex)
         {
-            string result = Decrypt(text, key);
-            Console.WriteLine(result);
+            PrintError($"Unexpected error: {ex.Message}");
         }
-        else
+    }
+
+    private void RunBreakMode(string text)
+    {
+        Console.WriteLine("\n[BREAKING] Breaking Caesar Cipher...\n");
+
+        var results = Break(text);
+        foreach (var (key, decryptedText) in results)
         {
-            Console.WriteLine("***mode error***");
+            Console.WriteLine($"Key {key:00}: {decryptedText}");
         }
+
+        PrintSuccess("Break analysis completed!");
+    }
+
+    private void RunCipherMode(string text, string mode)
+    {
+        int key = int.Parse(GetUserInput($"Key ({MinKey}-{MaxKey})"));
+
+        string result = mode == "enc"
+            ? Encrypt(text, key)
+            : Decrypt(text, key);
+
+        Console.WriteLine($"\nResult: {result}");
+        PrintSuccess($"{(mode == "enc" ? "Encryption" : "Decryption")} completed!");
     }
 }
