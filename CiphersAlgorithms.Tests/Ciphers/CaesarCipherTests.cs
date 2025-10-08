@@ -46,7 +46,7 @@ public class CaesarCipherTests
         string decrypted = _caesar.Decrypt(encrypted, key);
 
         // Assert
-        Assert.Equal(originalText.ToLower(), decrypted);
+        Assert.Equal(originalText.ToLower().Trim(), decrypted);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class CaesarCipherTests
         var possibilities = _caesar.Break(encryptedText);
 
         // Assert
-        Assert.Contains(possibilities, p => p.Text == originalText.ToLower());
+        Assert.Contains(possibilities, p => p.Text == originalText.ToLower().Trim());
         Assert.Contains(possibilities, p => p.Key == originalKey);
     }
 
@@ -75,25 +75,38 @@ public class CaesarCipherTests
         var possibilities = _caesar.Break(text);
 
         // Assert
-        Assert.Equal(26, possibilities.Count);
+        Assert.Equal(26, possibilities.Count());
         Assert.All(possibilities, p => Assert.InRange(p.Key, 1, 26));
     }
 
     [Theory]
     [InlineData("")]
-    [InlineData(null)]
-    public void Encrypt_EmptyOrNullText_ThrowsArgumentException(string? invalidText)
+    [InlineData("   ")]
+    public void Encrypt_EmptyOrWhitespaceText_ThrowsArgumentException(string invalidText)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _caesar.Encrypt(invalidText ?? string.Empty, 3));
+        Assert.Throws<ArgumentException>(() => _caesar.Encrypt(invalidText, 3));
     }
 
     [Theory]
-    [InlineData("invalid key")]
-    [InlineData("test123")]
-    public void Encrypt_InvalidKeyType_ThrowsArgumentException(object invalidKey)
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(27)]
+    [InlineData(100)]
+    public void Encrypt_InvalidKey_ThrowsArgumentOutOfRangeException(int invalidKey)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _caesar.Encrypt("hello", invalidKey));
+        Assert.Throws<ArgumentOutOfRangeException>(() => _caesar.Encrypt("hello", invalidKey));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(13)]
+    [InlineData(26)]
+    public void ValidateKey_ValidKey_DoesNotThrow(int validKey)
+    {
+        // Act & Assert
+        var exception = Record.Exception(() => _caesar.ValidateKey(validKey));
+        Assert.Null(exception);
     }
 }

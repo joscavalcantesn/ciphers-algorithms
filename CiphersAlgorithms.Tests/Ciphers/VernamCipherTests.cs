@@ -51,27 +51,26 @@ public class VernamCipherTests
 
     [Theory]
     [InlineData("")]
-    [InlineData(null)]
-    public void ValidateKey_EmptyOrNullKey_ThrowsArgumentException(string? invalidKey)
+    [InlineData("   ")]
+    public void ValidateKey_EmptyOrWhitespaceKey_ThrowsArgumentException(string invalidKey)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => VernamCipher.ValidateKey(invalidKey!));
+        Assert.Throws<ArgumentException>(() => _vernam.ValidateKey(invalidKey));
     }
 
     [Theory]
     [InlineData("")]
-    [InlineData(null)]
-    public void Encrypt_EmptyOrNullText_ThrowsArgumentException(string? invalidText)
+    [InlineData("   ")]
+    public void Encrypt_EmptyOrWhitespaceText_ThrowsArgumentException(string invalidText)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _vernam.Encrypt(invalidText ?? string.Empty, "key"));
+        Assert.Throws<ArgumentException>(() => _vernam.Encrypt(invalidText, "key"));
     }
 
     [Theory]
-    [InlineData(123)]
-    [InlineData(3.14)]
-    [InlineData(true)]
-    public void Encrypt_InvalidKeyType_ThrowsArgumentException(object invalidKey)
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Encrypt_InvalidKey_ThrowsArgumentException(string invalidKey)
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => _vernam.Encrypt("hello", invalidKey));
@@ -145,5 +144,17 @@ public class VernamCipherTests
 
         // Assert
         Assert.Equal(text, decrypted);
+    }
+
+    [Theory]  
+    [InlineData("validkey")]
+    [InlineData("123")]
+    [InlineData("password123")]
+    [InlineData("a")]
+    public void ValidateKey_ValidKey_DoesNotThrow(string validKey)
+    {
+        // Act & Assert
+        var exception = Record.Exception(() => _vernam.ValidateKey(validKey));
+        Assert.Null(exception);
     }
 }
