@@ -1,6 +1,6 @@
-# Vigenère Cipher Breaker
+# VigenÃ¨re Cipher Breaker
 
-The Vigenère cipher breaker is a cryptanalysis tool that attempts to break Vigenère ciphers using frequency analysis and statistical methods. This implementation is based on chi-square statistical analysis and Portuguese letter frequencies.
+The VigenÃ¨re cipher breaker is a cryptanalysis tool that attempts to break VigenÃ¨re ciphers using frequency analysis and statistical methods. This implementation is based on chi-square statistical analysis and Portuguese letter frequencies.
 
 ## How It Works
 
@@ -52,26 +52,13 @@ breaker.Run(); // Prompts for input via console
 
 The following example shows how the breaker analyzes ciphertext to discover the encryption key:
 
-![Vigenère Breaker Example 1 - Discovering the Key](../media/vigenere_breaker_example_1.png)
-
-```
-Input Text: "nveqfwfnyqjqfkzjfqf"
-Key Length Range: 1-5
-Expected Key: "chave"
-
-Results:
-1 - a
-2 - ab
-3 - abc
-4 - chav
-5 - chave  ? Most likely correct key
-```
+![VigenÃ¨re Breaker Example 1 - Discovering the Key](../media/vigenere_breaker_example_1.png)
 
 ### Decrypting with the Discovered Key
 
 Once the key is discovered, it can be used to decrypt the original ciphertext:
 
-![Vigenère Breaker Example 2 - Decrypting with Discovered Key](../media/vigenere_breaker_example_2.png)
+![VigenÃ¨re Breaker Example 2 - Decrypting with Discovered Key](../media/vigenere_breaker_example_2.png)
 
 ## Technical Details
 
